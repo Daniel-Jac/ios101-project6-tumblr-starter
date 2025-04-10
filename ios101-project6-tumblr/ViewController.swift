@@ -17,7 +17,6 @@ class ViewController: UIViewController, UITableViewDataSource {
 
         tableView.dataSource = self
         fetchPosts()
-
     }
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -28,7 +27,6 @@ class ViewController: UIViewController, UITableViewDataSource {
         let cell = tableView.dequeueReusableCell(withIdentifier: "PostCell", for: indexPath) as! PostCell
 
         let post = posts[indexPath.row]
-
         cell.summaryLabel.text = post.summary
 
         if let photo = post.photos.first {
@@ -37,6 +35,11 @@ class ViewController: UIViewController, UITableViewDataSource {
         }
 
         return cell
+    }
+
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        // Optional: unselect the row after tapping
+        tableView.deselectRow(at: indexPath, animated: true)
     }
 
     func fetchPosts() {
@@ -61,7 +64,6 @@ class ViewController: UIViewController, UITableViewDataSource {
                 let blog = try JSONDecoder().decode(Blog.self, from: data)
 
                 DispatchQueue.main.async { [weak self] in
-
                     let posts = blog.response.posts
                     self?.posts = posts
                     self?.tableView.reloadData()
@@ -77,5 +79,17 @@ class ViewController: UIViewController, UITableViewDataSource {
             }
         }
         session.resume()
+    }
+
+    // 🔥 Add this method to handle passing the Post object to DetailViewController
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "showDetail" {
+            if let cell = sender as? UITableViewCell,
+               let indexPath = tableView.indexPath(for: cell),
+               let detailVC = segue.destination as? DetailViewController {
+                let post = posts[indexPath.row]
+                detailVC.post = post
+            }
+        }
     }
 }
